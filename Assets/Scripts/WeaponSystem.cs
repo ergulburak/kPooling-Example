@@ -17,19 +17,16 @@ public class WeaponSystem : MonoBehaviour
     public WeaponConfig.WeaponType weaponType = WeaponConfig.WeaponType.Empty;
     public Transform bulletSpawnPoint;
     public WeaponConfig config;
+    
     [Header("Settings")] public bool enable;
     public int projectilePoolSize;
     public GameObject projectilePoolKey;
     GameObject instanceProjectile;
-    private void Awake()
-    {
-        if (instance == null)
-            instance = this;
-    }
-
+    
     void Start()
     {
         projectilePoolKey = Resources.Load("Bullets/" + config.bulletPrefabName) as GameObject;
+        
         if (enable) PoolingSystem.CreatePool(projectilePoolKey, projectilePoolKey, projectilePoolSize);
         else
             Debug.Log("Pooling kapalı.");
@@ -38,6 +35,11 @@ public class WeaponSystem : MonoBehaviour
             weaponState = WeaponState.ReadyToFire;
             weaponType = config.weaponType;
         }
+    }
+    private void Awake()
+    {
+        if (instance == null)
+            instance = this;
     }
 
     public void Shoot()
