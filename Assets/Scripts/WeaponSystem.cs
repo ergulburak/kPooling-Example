@@ -12,21 +12,22 @@ public class WeaponSystem : MonoBehaviour
         Waiting
     }
 
-    public static WeaponSystem instance;
+    public static WeaponSystem Instance { get; private set; }
+
     [Header("Monitor")] public WeaponState weaponState = WeaponState.Empty;
     public WeaponConfig.WeaponType weaponType = WeaponConfig.WeaponType.Empty;
     public Transform bulletSpawnPoint;
     public WeaponConfig config;
-    
+
     [Header("Settings")] public bool enable;
     public int projectilePoolSize;
     public GameObject projectilePoolKey;
     GameObject instanceProjectile;
-    
+
     void Start()
     {
         projectilePoolKey = Resources.Load("Bullets/" + config.bulletPrefabName) as GameObject;
-        
+
         if (enable) PoolingSystem.CreatePool(projectilePoolKey, projectilePoolKey, projectilePoolSize);
         else
             Debug.Log("Pooling kapalı.");
@@ -36,34 +37,21 @@ public class WeaponSystem : MonoBehaviour
             weaponType = config.weaponType;
         }
     }
+
     private void Awake()
     {
-        if (instance == null)
-            instance = this;
-    }
-
-    public void Shoot()
-    {
-        switch (weaponType)
+        if (Instance)
         {
-            case WeaponConfig.WeaponType.Empty:
-                break;
-            case WeaponConfig.WeaponType.SemiAuto:
-                ShootingProcess(1);
-                break;
-            case WeaponConfig.WeaponType.FullAuto:
-                ShootingProcess(2);
-                break;
-            case WeaponConfig.WeaponType.Shotgun:
-                ShootingProcess(3);
-                break;
-            default:
-                Debug.Log("Hatalı silah tipi algılandı.");
-                break;
+            DestroyImmediate(gameObject);
+        }
+        else
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
     }
 
-    void ShootingProcess(int weaponTypeNum)
+    public void Shoot()
     {
         switch (weaponState)
         {
@@ -79,18 +67,21 @@ public class WeaponSystem : MonoBehaviour
                 }
                 else
                 {
-                    switch (weaponTypeNum)
+                    switch (weaponType)
                     {
-                        case 0:
+                        case WeaponConfig.WeaponType.Empty:
                             break;
-                        case 1:
+                        case WeaponConfig.WeaponType.SemiAuto:
                             SemiAutoWeaponAction();
                             break;
-                        case 2:
+                        case WeaponConfig.WeaponType.FullAuto:
                             FullAutoWeaponAction();
                             break;
-                        case 3:
+                        case WeaponConfig.WeaponType.Shotgun:
                             ShotgunAutoWeaponAction();
+                            break;
+                        default:
+                            Debug.Log("Hatalı silah tipi algılandı.");
                             break;
                     }
 
@@ -117,33 +108,40 @@ public class WeaponSystem : MonoBehaviour
 
     private void SemiAutoWeaponAction()
     {
-        GameObject bullet = Instantiate(Resources.Load("Bullets/" + config.bulletPrefabName) as GameObject);
-        Physics.IgnoreCollision(bullet.GetComponent<Collider>(),
-            bulletSpawnPoint.parent.GetComponent<Collider>());
+        if (PoolingSystem.TryGetInstance(projectilePoolKey, out instanceProjectile))
+        {
+            Physics.IgnoreCollision(instanceProjectile.GetComponent<Collider>(),
+                bulletSpawnPoint.parent.GetComponent<Collider>());
 
-        bullet.transform.position = bulletSpawnPoint.position;
-        bullet.transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, 0);
-        bullet.GetComponent<Rigidbody>()
-            .AddForce(bulletSpawnPoint.forward * config.bulletSpeed, ForceMode.Impulse);
+            instanceProjectile.transform.position = bulletSpawnPoint.position;
+            instanceProjectile.transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, 0);
+            instanceProjectile.GetComponent<Rigidbody>().velocity = Vector3.zero;
+            instanceProjectile.GetComponent<Rigidbody>()
+                .AddForce(bulletSpawnPoint.forward * config.bulletSpeed, ForceMode.Impulse);
+            instanceProjectile.GetComponentInChildren<TrailRenderer>().Clear();
+        }
     }
 
     private void FullAutoWeaponAction()
     {
-        GameObject bullet = Instantiate(Resources.Load("Bullets/" + config.bulletPrefabName) as GameObject);
-        Physics.IgnoreCollision(bullet.GetComponent<Collider>(),
-            bulletSpawnPoint.parent.GetComponent<Collider>());
+        if (PoolingSystem.TryGetInstance(projectilePoolKey, out instanceProjectile))
+        {
+            Physics.IgnoreCollision(instanceProjectile.GetComponent<Collider>(),
+                bulletSpawnPoint.parent.GetComponent<Collider>());
 
-        bullet.transform.position = bulletSpawnPoint.position;
-        bullet.transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, 0);
-        bullet.GetComponent<Rigidbody>()
-            .AddForce(bulletSpawnPoint.forward * config.bulletSpeed, ForceMode.Impulse);
+            instanceProjectile.transform.position = bulletSpawnPoint.position;
+            instanceProjectile.transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, 0);
+            instanceProjectile.GetComponent<Rigidbody>().velocity = Vector3.zero;
+            instanceProjectile.GetComponent<Rigidbody>()
+                .AddForce(bulletSpawnPoint.forward * config.bulletSpeed, ForceMode.Impulse);
+            instanceProjectile.GetComponentInChildren<TrailRenderer>().Clear();
+        }
     }
 
     private void ShotgunAutoWeaponAction()
     {
         if (enable)
         {
-            
             for (int i = 0; i < config.projectileCount; i++)
             {
                 if (PoolingSystem.TryGetInstance(projectilePoolKey, out instanceProjectile))
@@ -160,7 +158,6 @@ public class WeaponSystem : MonoBehaviour
                     instanceProjectile.GetComponent<Rigidbody>().velocity = Vector3.zero;
                     instanceProjectile.GetComponent<Rigidbody>()
                         .AddForce(instanceProjectile.transform.forward * config.bulletSpeed, ForceMode.Impulse);
-
                     instanceProjectile.GetComponentInChildren<TrailRenderer>().Clear();
                 }
             }

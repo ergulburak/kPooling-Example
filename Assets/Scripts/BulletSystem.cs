@@ -11,7 +11,7 @@ public class BulletSystem : MonoBehaviour
         if (this.gameObject.activeSelf)
         {
             time += Time.deltaTime;
-            if (time >= WeaponSystem.instance.config.lifeTime)
+            if (time >= WeaponSystem.Instance.config.lifeTime)
             {
                 LifeTimeEnd();
                 time = 0f;
@@ -26,7 +26,7 @@ public class BulletSystem : MonoBehaviour
 
     private void LifeTimeEnd()
     {
-        PoolingSystem.ReturnInstance(WeaponSystem.instance.projectilePoolKey, this.gameObject);
+        PoolingSystem.ReturnInstance(WeaponSystem.Instance.projectilePoolKey, this.gameObject);
     }
 
     private void OnCollisionEnter(Collision other)
@@ -36,7 +36,7 @@ public class BulletSystem : MonoBehaviour
             Physics.IgnoreCollision(other.collider,GetComponent<Collider>());
         }else
         {
-            PoolingSystem.ReturnInstance(WeaponSystem.instance.projectilePoolKey, this.gameObject);
+            PoolingSystem.ReturnInstance(WeaponSystem.Instance.projectilePoolKey, this.gameObject);
         }
     }
 }

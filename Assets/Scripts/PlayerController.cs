@@ -52,7 +52,7 @@ public class PlayerController : MonoBehaviour
 
         if (Input.GetKey(fireKeyCode))
         {
-            WeaponSystem.instance.Shoot();
+            WeaponSystem.Instance.Shoot();
         }
 
         RaycastHit hit;

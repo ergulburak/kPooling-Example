@@ -19,10 +19,10 @@ MonoBehaviour:
   bulletDamage: 20
   lifeTime: 3
   magazine: 2
-  magazineBulletCount: 30
-  bulletCount: 55
-  bulletInMagazine: 345
-  projectileCount: 50
-  spreadAngel: 10
+  magazineBulletCount: 99999
+  bulletCount: 0
+  bulletInMagazine: 95919
+  projectileCount: 500
+  spreadAngel: 50
   reloadTime: 2
-  fireRate: 0.1
+  fireRate: 0.2
